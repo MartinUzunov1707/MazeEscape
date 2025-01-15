@@ -17,6 +17,7 @@ char stagesBeat[ALL_STAGES]{'0'};
 char currentLevelMatrix[MAX_HEIGHT][MAX_WIDTH]{};
 std::string currentLevelName = "maps\\";
 short portalCoordinates[6];
+int playerRow, playerCol;
 
 
 void usernameValidation(std::string &username) {
@@ -104,12 +105,14 @@ void identify() {
 	}
 	
 }
-void countBeatenStages(int &number) {
+int countBeatenStages() {
+	int number = 0;
 	for (int i = 0; i < ALL_STAGES;i++) {
 		if (stagesBeat[i] != '\0') {
 			number++;
 		}
 	}
+	return number;
 }
 void flipPortalCoordinates() {
 	for (int i = 0; i < (MAX_PORTAL_COORDINATES / 2);i++) {
@@ -129,6 +132,10 @@ void loadMatrixFromFile(std::string fileName) {
 					portalCoordinates[portalIndex] = a;
 					portalCoordinates[portalIndex + 1] = i;
 					portalIndex += 2;
+				}
+				else if (matrix.peek() == '@') {
+					playerRow = i;
+					playerCol = a;
 				}
 				currentLevelMatrix[i][a] = matrix.get();
 			}
@@ -151,6 +158,10 @@ void loadMatrixFromPlayerFile() {
 					portalCoordinates[portalIndex + 1] = i;
 					portalIndex += 2;
 				}
+				else if (currentPlayerProfile.peek() == '@') {
+					playerRow = i;
+					playerCol = a;
+				}
 				currentLevelMatrix[i][a] = currentPlayerProfile.get();
 			}
 			else {
@@ -164,6 +175,10 @@ void loadSaveData() {
 	if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
 		health = 3;
 		coins = 0;
+		char level = 'a' + (1 + (rand() % 2));
+		currentLevelName.insert(currentLevelName.size(), 1, level);
+		currentLevelName.append(".txt");
+		loadMatrixFromFile(currentLevelName);
 	}
 	else {
 		health = currentPlayerProfile.get() - '0';
@@ -173,8 +188,8 @@ void loadSaveData() {
 		coins = std::stoi(temp);
 		currentPlayerProfile.getline(stagesBeat, 6);
 		if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
-			int numberOfBeatenStages = 0;
-			countBeatenStages(numberOfBeatenStages);
+			int numberOfBeatenStages = countBeatenStages();
+			
 			
 			char level = 'a' + numberOfBeatenStages + (1 + (rand() % 2));
 			currentLevelName.insert(currentLevelName.size(),1, level);
@@ -188,10 +203,175 @@ void loadSaveData() {
 		}
 	}
 }
+void displayHealth(int health) {
+	std::cout << "Health:";
+	for (int i = 0; i < health; i++)
+	{
+		std::cout << "<3";
+	}
+	std::cout << std::endl;
+}
+void renderMatrix(bool hasKey) {
+	system("cls");
+	std::cout << "Level:" << countBeatenStages() + 1 << std::endl;
+	displayHealth(health);
+	std::cout << "Coins:" << coins << std::endl;
+	std::cout << "Key: " << (hasKey ? "Found" : "Not found") << std::endl;
+	for (int i = 0; i < MAX_HEIGHT; i++)
+	{
+		for (int a = 0; a < MAX_WIDTH; a++)
+		{
+			std::cout << currentLevelMatrix[i][a];
+		}
+		std::cout << std::endl;
+	}
+}
+void goToNextPortal(int& row, int& col) {
+	int nextPortalRow = 0, nextPortalCol = 0;
+	for (int i = 0; i < MAX_PORTAL_COORDINATES; i+=2)
+	{
+		if (portalCoordinates[i] == row) {
+			if (i + 2 >= MAX_PORTAL_COORDINATES) {
+				nextPortalRow = portalCoordinates[0];
+				nextPortalCol = portalCoordinates[1];
+			}
+			else {
+				nextPortalRow = portalCoordinates[i + 2];
+				nextPortalCol = portalCoordinates[i + 3];
+			}
+		}
+	}
+	if (currentLevelMatrix[nextPortalRow][nextPortalCol-1] == ' ') {
+		row = nextPortalRow;
+		col = nextPortalCol - 1;
+	}
+	else if (currentLevelMatrix[nextPortalRow-1][nextPortalCol ] == ' ') {
+		row = nextPortalRow - 1;
+		col = nextPortalCol;
+	}
+	else if(currentLevelMatrix[nextPortalRow][nextPortalCol + 1] == ' '){
+		row = nextPortalRow;
+		col = nextPortalCol + 1;
+	}
+	else {
+		row = nextPortalRow + 1;
+		col = nextPortalCol;
+	}
+	currentLevelMatrix[row][col] = '@';
+}
+void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
+	char toGo;
+	switch (move) {
+	case 'W':
+	case 'w':
+			toGo = currentLevelMatrix[row - 1][col];
+			switch (toGo) {
+			case '#':
+				health--;
+				break;
+			case '%':
+				currentLevelMatrix[row][col] = ' ';
+				goToNextPortal(--row, col);
+				break;
+			case '&':
+				hasKey = true;
+				coins--;
+			case 'C':
+				coins++;
+			case ' ':
+				currentLevelMatrix[row][col] = ' ';
+				currentLevelMatrix[--row][col] = '@';
+				break;
+			}
+		break;
+	case 'D':
+	case 'd':
+		toGo = currentLevelMatrix[row][col + 1];
+		switch (toGo) {
+		case '#':
+			health--;
+			break;
+		case '%':
+			currentLevelMatrix[row][col] = ' ';
+			goToNextPortal(row, ++col);
+			break;
+		case '&':
+			hasKey = true;
+			coins--;
+		case 'C':
+			coins++;
+		case ' ':
+			currentLevelMatrix[row][col] = ' ';
+			currentLevelMatrix[row][++col] = '@';
+			break;
+		}
+		break;
+	case 'A':
+	case 'a':
+		toGo = currentLevelMatrix[row][col-1];
+		switch (toGo) {
+		case '#':
+			health--;
+			break;
+		case '%':
+			currentLevelMatrix[row][col] = ' ';
+			goToNextPortal(row, --col);
+			break;
+		case '&':
+			hasKey = true;
+			coins--;
+		case 'C':
+			coins++;
+		case ' ':
+			currentLevelMatrix[row][col] = ' ';
+			currentLevelMatrix[row][--col] = '@';
+			break;
+		}
+		break;
+	case 'S':
+	case 's':
+		toGo = currentLevelMatrix[row + 1][col];
+		switch (toGo) {
+		case '#':
+			health--;
+			break;
+		case '%':
+			currentLevelMatrix[row][col] = ' ';
+			goToNextPortal(++row,col);
+			break;
+		case '&':
+			hasKey = true;
+			coins--;
+		case 'C':
+			coins++;
+		case ' ':
+			currentLevelMatrix[row][col] = ' ';
+			currentLevelMatrix[++row][col] = '@';
+			break;
+		}
+		break;
+	case 'E':
+	case 'e':
+		//todo
+		break;
+	}
+}
+void startGame() {
+	bool hasKey = false;
+	while (true) {
+		renderMatrix(hasKey);
+		std::cout << "W/w(up) D/d(right) A/a(left) S/s(down) E/e(exit)" << std::endl;
+		std::cout << "Input:";
+		char input;
+		std::cin >> input;
+		validatePlayerMoves(playerRow, playerCol, hasKey, input);
+	}
+}
 int main()
 {
     identify();
 	loadSaveData();
+	startGame();
 }
 
 
