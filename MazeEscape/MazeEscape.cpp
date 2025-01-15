@@ -4,7 +4,17 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+const short ALL_STAGES = 6;
+const short MAX_HEIGHT = 17;
+const short MAX_WIDTH = 25;
 std::fstream currentPlayerProfile;
+unsigned short health;
+unsigned int coins;
+char stagesBeat[ALL_STAGES]{'0'};
+char currentLevelMatrix[MAX_HEIGHT][MAX_WIDTH]{};
+std::string currentLevelName = "maps\\";
+
 
 void usernameValidation(std::string &username) {
 	std::cout << "Enter username:";
@@ -14,6 +24,7 @@ void usernameValidation(std::string &username) {
 		std::cout << "Enter username:";
 		std::cin >> username;
 	}
+	username.append(".txt");
 }
 void registerPlayer(std::string username) {
 	currentPlayerProfile.open(username);
@@ -43,6 +54,7 @@ void loginPlayer(std::string username) {
 			return;
 			case '2':
 				usernameValidation(username);
+				loginPlayer(username);
 				break;
 			case '3':
 				exit(EXIT_SUCCESS);
@@ -68,15 +80,13 @@ void identify() {
 		if (input == '1') {
 			std::string username;
 			usernameValidation(username);
-			username.append(".txt");
-
+			
 			loginPlayer(username);
 			break;
 		}
 		else if (input == '2') {
 			std::string username;
 			usernameValidation(username);
-			username.append(".txt");
 
 			registerPlayer(username);
 			break;
@@ -91,10 +101,45 @@ void identify() {
 	}
 	
 }
-
+void countBeatenStages(int &number) {
+	for (int i = 0; i < ALL_STAGES;i++) {
+		if (stagesBeat[i] != '\0') {
+			number++;
+		}
+	}
+}
+void loadMatrixFromFile(std::string fileName) {
+	std::fstream matrix;
+	matrix.open(fileName,std::ios::in);
+	std::cout << matrix.is_open();
+}
+void loadSaveData() {
+	if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
+		health = 3;
+		coins = 0;
+	}
+	else {
+		health = currentPlayerProfile.get() - '0';
+		currentPlayerProfile.seekg(2, std::fstream::cur);
+		std::string temp;
+		getline(currentPlayerProfile, temp);
+		coins = std::stoi(temp);
+		currentPlayerProfile.getline(stagesBeat, 6);
+		if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
+			int numberOfBeatenStages = 0;
+			countBeatenStages(numberOfBeatenStages);
+			
+			char level = 'a' + numberOfBeatenStages + (1 + (rand() % 2));
+			currentLevelName.insert(currentLevelName.size(),1, level);
+			currentLevelName.append( + ".txt");
+			loadMatrixFromFile(currentLevelName);
+		}
+	}
+}
 int main()
 {
     identify();
+	loadSaveData();
 }
 
 
