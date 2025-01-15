@@ -7,33 +7,65 @@
 std::fstream currentPlayerProfile;
 
 void usernameValidation(std::string &username) {
+	std::cout << "Enter username:";
 	std::cin >> username;
 	while (username.length() >= 50) {
 		std::cout << "Username must not exceed 50 characters!" << std::endl;
+		std::cout << "Enter username:";
 		std::cin >> username;
 	}
-}
-void loginPlayer(std::string username) {
-
 }
 void registerPlayer(std::string username) {
 	currentPlayerProfile.open(username);
 	if (currentPlayerProfile) {
 		std::cout << "Username already exist. Logged in succesfully!" << std::endl;
 	}
+	else {
+		currentPlayerProfile.open(username, std::ios::out);
+		std::cout << "Registered successfully!" << std::endl;
+	}
 }
+void loginPlayer(std::string username) {
+
+	currentPlayerProfile.open(username);
+	while (!currentPlayerProfile) {
+
+		std::cout << "Username does not exist. Do you wish to register?" << std::endl;
+		std::cout << "1.Yes" << std::endl;
+		std::cout << "2.No, enter new username" << std::endl;
+		std::cout << "3.Exit" << std::endl;
+		std::cout << "Input:";
+		char input;
+		std::cin >> input;
+		switch (input) {
+			case '1':
+				registerPlayer(username);
+			return;
+			case '2':
+				usernameValidation(username);
+				break;
+			case '3':
+				exit(EXIT_SUCCESS);
+				break;
+			default:
+				std::cout << "Invalid command!" << std::endl;
+		}
+
+	}
+	
+}
+
 
 void identify() {
 	std::cout << "Welcome to Dungeon Escape!" << std::endl;
 	std::cout << "1.Login" << std::endl;
 	std::cout << "2.Register" << std::endl;
 	std::cout << "3.Exit" << std::endl;
-	std::cout << "Input: ";
+	std::cout << "Input:";
 	char input = 0;
 	std::cin >> input;
 	while (true) {
 		if (input == '1') {
-			std::cout << "Please enter username:";
 			std::string username;
 			usernameValidation(username);
 			username.append(".txt");
@@ -42,7 +74,6 @@ void identify() {
 			break;
 		}
 		else if (input == '2') {
-			std::cout << "Please enter username:";
 			std::string username;
 			usernameValidation(username);
 			username.append(".txt");
