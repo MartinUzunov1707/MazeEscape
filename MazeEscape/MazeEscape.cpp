@@ -6,14 +6,17 @@
 #include <string>
 
 const short ALL_STAGES = 6;
-const short MAX_HEIGHT = 17;
-const short MAX_WIDTH = 25;
+const short MAX_HEIGHT = 18;
+const short MAX_WIDTH = 26;
+const short MAX_PORTAL_COORDINATES = 6;
+
 std::fstream currentPlayerProfile;
 unsigned short health;
 unsigned int coins;
 char stagesBeat[ALL_STAGES]{'0'};
 char currentLevelMatrix[MAX_HEIGHT][MAX_WIDTH]{};
 std::string currentLevelName = "maps\\";
+short portalCoordinates[6];
 
 
 void usernameValidation(std::string &username) {
@@ -108,10 +111,54 @@ void countBeatenStages(int &number) {
 		}
 	}
 }
+void flipPortalCoordinates() {
+	for (int i = 0; i < (MAX_PORTAL_COORDINATES / 2);i++) {
+		short temp = portalCoordinates[i];
+		portalCoordinates[i] = portalCoordinates[MAX_PORTAL_COORDINATES -1 - i];
+		portalCoordinates[MAX_PORTAL_COORDINATES -1 -i] = temp;
+	}
+}
 void loadMatrixFromFile(std::string fileName) {
 	std::fstream matrix;
 	matrix.open(fileName,std::ios::in);
-	std::cout << matrix.is_open();
+	int portalIndex = 0;
+	for (int i = 0; i < MAX_HEIGHT; i++){
+		for (int a = 0; a < MAX_WIDTH; a++) {
+			if (matrix.peek() != '\n') {
+				if (matrix.peek() == '%') {
+					portalCoordinates[portalIndex] = a;
+					portalCoordinates[portalIndex + 1] = i;
+					portalIndex += 2;
+				}
+				currentLevelMatrix[i][a] = matrix.get();
+			}
+			else {
+				matrix.get();
+			}
+		}
+	}
+	flipPortalCoordinates();
+}
+void loadMatrixFromPlayerFile() {
+
+	int portalIndex = 0;
+	currentPlayerProfile.get();
+	for (int i = 0; i < MAX_HEIGHT; i++) {
+		for (int a = 0; a < MAX_WIDTH; a++) {
+			if (currentPlayerProfile.peek() != '\n') {
+				if (currentPlayerProfile.peek() == '%') {
+					portalCoordinates[portalIndex] = a;
+					portalCoordinates[portalIndex + 1] = i;
+					portalIndex += 2;
+				}
+				currentLevelMatrix[i][a] = currentPlayerProfile.get();
+			}
+			else {
+				currentPlayerProfile.get();
+			}
+		}
+	}
+	flipPortalCoordinates();
 }
 void loadSaveData() {
 	if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
@@ -131,8 +178,13 @@ void loadSaveData() {
 			
 			char level = 'a' + numberOfBeatenStages + (1 + (rand() % 2));
 			currentLevelName.insert(currentLevelName.size(),1, level);
-			currentLevelName.append( + ".txt");
+			currentLevelName.append(".txt");
 			loadMatrixFromFile(currentLevelName);
+		}
+		else {
+			currentLevelName.insert(currentLevelName.length(),1, currentPlayerProfile.get());
+			currentLevelName.append(".txt");
+			loadMatrixFromPlayerFile();
 		}
 	}
 }
