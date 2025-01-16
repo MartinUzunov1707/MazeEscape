@@ -18,6 +18,7 @@ char currentLevelMatrix[MAX_HEIGHT][MAX_WIDTH]{};
 std::string currentLevelName = "maps\\.txt";
 short portalCoordinates[6];
 int playerRow, playerCol;
+std::string username;
 
 
 void usernameValidation(std::string &username) {
@@ -82,14 +83,12 @@ void identify() {
 	std::cin >> input;
 	while (true) {
 		if (input == '1') {
-			std::string username;
 			usernameValidation(username);
 			
 			loginPlayer(username);
 			break;
 		}
 		else if (input == '2') {
-			std::string username;
 			usernameValidation(username);
 
 			registerPlayer(username);
@@ -157,7 +156,7 @@ void loadMatrixFromFile(std::string fileName) {
 void loadMatrixFromPlayerFile() {
 
 	int portalIndex = 0;
-	currentPlayerProfile.get();
+	char r = currentPlayerProfile.get();
 	for (int i = 0; i < MAX_HEIGHT; i++) {
 		for (int a = 0; a < MAX_WIDTH; a++) {
 			if (currentPlayerProfile.peek() != '\n') {
@@ -174,6 +173,7 @@ void loadMatrixFromPlayerFile() {
 			}
 			else {
 				currentPlayerProfile.get();
+				break;
 			}
 		}
 	}
@@ -216,8 +216,27 @@ void loadSaveData() {
 	}
 }
 
-void saveAndQuit() {
-	//todo
+void saveAndQuit(bool onLevelComplete) {
+	currentPlayerProfile.close();
+	currentPlayerProfile.open(username, std::ios::out);
+	currentPlayerProfile << health << std::endl;
+	currentPlayerProfile << coins << std::endl;
+	currentPlayerProfile << stagesBeat << std::endl;
+	if (!onLevelComplete) {
+		currentPlayerProfile << currentLevelName[5] << std::endl;
+		for (int i = 0; i < MAX_HEIGHT;i++) {
+			for (int a = 0; a < MAX_WIDTH; a++)
+			{
+				if (currentLevelMatrix[i][a] == '\0' || currentLevelMatrix[i][a] == -1) {
+					break;
+				}
+				currentPlayerProfile << currentLevelMatrix[i][a];
+			}
+			currentPlayerProfile << std::endl;
+		}
+	}
+	currentPlayerProfile.close();
+	exit(EXIT_SUCCESS);
 }
 
 void winLevel() {
@@ -246,7 +265,7 @@ void winLevel() {
 				break;
 			}
 			else if(res == '2') {
-				saveAndQuit();
+				saveAndQuit(true);
 			}
 			std::cout << "Invalid command!" << std::endl;
 			std::cout << "Input:";
@@ -317,7 +336,6 @@ void goToNextPortal(int& row, int& col) {
 }
 
 void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
-	//todo- add win condition
 	char toGo;
 	switch (move) {
 	case 'W':
@@ -446,7 +464,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		break;
 	case 'E':
 	case 'e':
-		//todo
+		saveAndQuit(false);
 		break;
 	}
 }
