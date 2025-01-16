@@ -15,7 +15,7 @@ unsigned short health;
 unsigned int coins;
 char stagesBeat[ALL_STAGES]{'0'};
 char currentLevelMatrix[MAX_HEIGHT][MAX_WIDTH]{};
-std::string currentLevelName = "maps\\";
+std::string currentLevelName = "maps\\.txt";
 short portalCoordinates[6];
 int playerRow, playerCol;
 
@@ -183,8 +183,12 @@ void loadMatrixFromPlayerFile() {
 void goToNextLevel() {
 	int numberOfBeatenStages = countBeatenStages();
 	char level = 'a' + numberOfBeatenStages + (1 + (rand() % 2));
-	currentLevelName.insert(currentLevelName.size(), 1, level);
-	currentLevelName.append(".txt");
+	if (currentLevelName.length() == 10) {
+		currentLevelName[5] = level;
+	}
+	else {
+		currentLevelName.insert(5, 1, level);
+	}
 	loadMatrixFromFile(currentLevelName);
 }
 
@@ -206,8 +210,7 @@ void loadSaveData() {
 			goToNextLevel();
 		}
 		else {
-			currentLevelName.insert(currentLevelName.length(),1, currentPlayerProfile.get());
-			currentLevelName.append(".txt");
+			currentLevelName.insert(5,1, currentPlayerProfile.get());			
 			loadMatrixFromPlayerFile();
 		}
 	}
@@ -339,6 +342,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 				break;
 			case 'X':
 				if (hasKey) {
+					hasKey = false;
 					winLevel();
 				}
 				else {
@@ -369,6 +373,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			break;
 		case 'X':
 			if (hasKey) {
+				hasKey = false;
 				winLevel();
 			}
 			else {
@@ -399,6 +404,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			break;
 		case 'X':
 				if (hasKey) {
+					hasKey = false;
 					winLevel();
 				}
 				else {
@@ -429,6 +435,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			break;
 		case 'X':
 			if (hasKey) {
+				hasKey = false;
 				winLevel();
 			}
 			else {
