@@ -108,7 +108,8 @@ void identify() {
 		std::cout << "Input: ";
 		std::cin >> input;
 	}
-	
+	//removes last 4 characters from username - ".txt"
+	username = username.substr(0, username.length() - 4);
 }
 
 int countBeatenStages() {
@@ -198,32 +199,9 @@ void goToNextLevel() {
 	loadMatrixFromFile(currentLevelName);
 }
 
-void loadSaveData() {
-	if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
-		health = 3;
-		coins = 0;
-		stagesBeat[0] = 'n';
-		goToNextLevel();
-	}
-	else {
-		health = currentPlayerProfile.get() - '0';
-		currentPlayerProfile.seekg(2, std::fstream::cur);
-		std::string temp;
-		getline(currentPlayerProfile, temp);
-		coins = std::stoi(temp);
-		currentPlayerProfile.getline(stagesBeat, 6);
-		if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
-			goToNextLevel();
-		}
-		else {
-			currentLevelName.insert(5,1, currentPlayerProfile.get());			
-			loadMatrixFromPlayerFile();
-		}
-	}
-}
-
 void saveAndQuit(bool onLevelComplete) {
 	currentPlayerProfile.close();
+	username.append(".txt");
 	currentPlayerProfile.open(username, std::ios::out);
 	currentPlayerProfile << health << std::endl;
 	currentPlayerProfile << coins << std::endl;
@@ -274,7 +252,7 @@ void playCompletedLevel() {
 				currentLevelName[5] = stagesBeat[(res - '0') - 1];
 			}
 			else {
-				currentLevelName.insert(5, 1, stagesBeat[(res - '0')]);
+				currentLevelName.insert(5, 1, stagesBeat[(res - '0')-1]);
 			}
 			loadMatrixFromFile(currentLevelName);
 			break;
@@ -282,6 +260,68 @@ void playCompletedLevel() {
 		std::cout << "Invalid command!" << std::endl;
 		std::cout << "Input:";
 		std::cin >> res;
+	}
+}
+
+void loadSaveData() {
+	std::cout << "Welcome, " << username << '!' << std::endl;
+	if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
+		health = 3;
+		coins = 0;
+		stagesBeat[0] = 'n';
+
+		std::cout << "1.Start new game." << std::endl;
+		std::cout << "2.Exit." << std::endl;
+		std::cout << "Input:";
+		char res;
+		std::cin >> res;
+		while (true) {
+			if (res == '1') {
+				goToNextLevel();
+				break;
+			}
+			else if (res == '2') {
+				exit(EXIT_SUCCESS);
+			}
+			std::cout << "Invalid command!" << std::endl;
+			std::cout << "Input:";
+			std::cin >> res;
+		}
+		
+	}
+	else {
+		health = currentPlayerProfile.get() - '0';
+		currentPlayerProfile.seekg(2, std::fstream::cur);
+		std::string temp;
+		getline(currentPlayerProfile, temp);
+		coins = std::stoi(temp);
+		currentPlayerProfile.getline(stagesBeat, 6);
+		
+		std::cout << "1.Continue game." << std::endl;
+		std::cout << "2.Replay level(current progress will be lost)." << std::endl;
+		std::cout << "Input:";
+		char res;
+		std::cin >> res;
+
+		while (true) {
+			if (res == '1') {
+				if (currentPlayerProfile.peek() == std::fstream::traits_type::eof()) {
+					goToNextLevel();
+				}
+				else {
+					currentLevelName.insert(5, 1, currentPlayerProfile.get());
+					loadMatrixFromPlayerFile();
+				}
+				break;
+			}
+			else if (res == '2') {
+				playCompletedLevel();
+				break;
+			}
+			std::cout << "Invalid command!" << std::endl;
+			std::cout << "Input:";
+			std::cin >> res;
+		}
 	}
 }
 
