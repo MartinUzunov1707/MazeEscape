@@ -355,7 +355,9 @@ void winGame() {
 	}
 }
 
-void winLevel() {
+void winLevel(int &tempCoins) {
+	coins += tempCoins;
+	tempCoins = 0;
 	char wonLevel = currentLevelName[5];
 	for (int i = 0; i < ALL_STAGES; i++)
 	{
@@ -400,11 +402,12 @@ void displayHealth(int health) {
 	std::cout << std::endl;
 }
 
-void renderMatrix(bool hasKey) {
+void renderMatrix(bool hasKey, int &tempCoins) {
 	system("cls");
 	std::cout << "Level:" << mapToLevel(currentLevelName[5]) << std::endl;
 	displayHealth(health);
-	std::cout << "Coins:" << coins << std::endl;
+	std::cout << "Collected coins:" << tempCoins << std::endl;
+	std::cout << "All coins:" << coins << std::endl;
 	std::cout << "Key: " << (hasKey ? "Found" : "Not found") << std::endl;
 	for (int i = 0; i < MAX_HEIGHT; i++)
 	{
@@ -461,7 +464,7 @@ void reduceHealth() {
 	}
 }
 
-void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
+void validatePlayerMoves(int &row, int &col, bool& hasKey, char move, int &tempCoins) {
 	char toGo;
 	switch (move) {
 	case 'W':
@@ -477,9 +480,9 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 				break;
 			case '&':
 				hasKey = true;
-				coins--;
+				tempCoins--;
 			case 'C':
-				coins++;
+				tempCoins++;
 			case ' ':
 				currentLevelMatrix[row][col] = ' ';
 				currentLevelMatrix[--row][col] = '@';
@@ -487,7 +490,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			case 'X':
 				if (hasKey) {
 					hasKey = false;
-					winLevel();
+					winLevel(tempCoins);
 				}
 				else {
 					std::cout << "You need a key to unlock the chest!" << std::endl;
@@ -508,9 +511,9 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			break;
 		case '&':
 			hasKey = true;
-			coins--;
+			tempCoins--;
 		case 'C':
-			coins++;
+			tempCoins++;
 		case ' ':
 			currentLevelMatrix[row][col] = ' ';
 			currentLevelMatrix[row][++col] = '@';
@@ -518,7 +521,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		case 'X':
 			if (hasKey) {
 				hasKey = false;
-				winLevel();
+				winLevel(tempCoins);
 			}
 			else {
 				std::cout << "You need a key to unlock the chest!" << std::endl;
@@ -539,9 +542,9 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			break;
 		case '&':
 			hasKey = true;
-			coins--;
+			tempCoins--;
 		case 'C':
-			coins++;
+			tempCoins++;
 		case ' ':
 			currentLevelMatrix[row][col] = ' ';
 			currentLevelMatrix[row][--col] = '@';
@@ -549,7 +552,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		case 'X':
 				if (hasKey) {
 					hasKey = false;
-					winLevel();
+					winLevel(tempCoins);
 				}
 				else {
 					std::cout << "You need a key to unlock the chest!" << std::endl;
@@ -570,9 +573,9 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			break;
 		case '&':
 			hasKey = true;
-			coins--;
+			tempCoins--;
 		case 'C':
-			coins++;
+			tempCoins++;
 		case ' ':
 			currentLevelMatrix[row][col] = ' ';
 			currentLevelMatrix[++row][col] = '@';
@@ -580,7 +583,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		case 'X':
 			if (hasKey) {
 				hasKey = false;
-				winLevel();
+				winLevel(tempCoins);
 			}
 			else {
 				std::cout << "You need a key to unlock the chest!" << std::endl;
@@ -597,13 +600,14 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 
 void startGame() {
 	bool hasKey = false;
+	int tempCoins = 0;
 	while (true) {
-		renderMatrix(hasKey);
+		renderMatrix(hasKey,tempCoins);
 		std::cout << "W/w(up) D/d(right) A/a(left) S/s(down) E/e(exit)" << std::endl;
 		std::cout << "Input:";
 		char input;
 		std::cin >> input;
-		validatePlayerMoves(playerRow, playerCol, hasKey, input);
+		validatePlayerMoves(playerRow, playerCol, hasKey, input, tempCoins);
 	}
 }
 
