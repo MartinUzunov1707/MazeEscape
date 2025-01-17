@@ -13,7 +13,7 @@ const short MAX_PORTAL_COORDINATES = 6;
 std::fstream currentPlayerProfile;
 unsigned short health;
 unsigned int coins;
-char stagesBeat[ALL_STAGES]{'0'};
+char stagesBeat[ALL_STAGES]{'\0'};
 char currentLevelMatrix[MAX_HEIGHT][MAX_WIDTH]{};
 std::string currentLevelName = "maps\\.txt";
 short portalCoordinates[6];
@@ -72,6 +72,12 @@ void loginPlayer(std::string username) {
 	
 }
 
+void clearBeatenStages() {
+	stagesBeat[0] = 'n';
+	for (int i = 1; i < ALL_STAGES;i++) {
+		stagesBeat[i] = '\0';
+	}
+}
 
 void identify() {
 	std::cout << "Welcome to Dungeon Escape!" << std::endl;
@@ -237,6 +243,47 @@ void saveAndQuit(bool onLevelComplete) {
 	}
 	currentPlayerProfile.close();
 	exit(EXIT_SUCCESS);
+}
+
+void playCompletedLevel() {
+	std::cout << "Choose level to play again:" << std::endl;
+	int numberOfcompletedStages = countBeatenStages();
+	switch (numberOfcompletedStages) {
+		case 1:
+			std::cout << "1.Easy" << std::endl;
+		case 2:
+			std::cout << "1.Easy" << std::endl;
+		case 3:
+			std::cout << "1.Easy" << std::endl;
+			break;
+
+	}
+}
+
+void winGame() {
+	system("cls");
+	std::cout << "Congratulations! You have beaten the game!" << std::endl;
+	std::cout << "Your score is " << health + coins << "!" << std::endl;
+	std::cout << "1.Lose all progress and play again." << std::endl;
+	std::cout << "2.Save and quit." << std::endl;
+	std::cout << "3.Replay completed level." << std::endl;
+	std::cout << "Input:";
+	char res;
+	std::cin >> res;
+	while (true) {
+		if (res == '1') {
+			clearBeatenStages();
+			goToNextLevel();
+			break;
+		}
+		else if (res == '2') {
+			saveAndQuit(true);
+		}
+		else if (res == '3') {
+			playCompletedLevel();
+		}
+	}
+
 }
 
 void winLevel() {
