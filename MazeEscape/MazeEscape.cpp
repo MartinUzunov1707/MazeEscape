@@ -451,6 +451,16 @@ void goToNextPortal(int& row, int& col) {
 	currentLevelMatrix[row][col] = '@';
 }
 
+void reduceHealth() {
+	if (health - 1 == 0) {
+		loadMatrixFromFile(currentLevelName);
+		health = 3;
+	}
+	else {
+		health--;
+	}
+}
+
 void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 	char toGo;
 	switch (move) {
@@ -459,7 +469,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 			toGo = currentLevelMatrix[row - 1][col];
 			switch (toGo) {
 			case '#':
-				health--;
+				reduceHealth();
 				break;
 			case '%':
 				currentLevelMatrix[row][col] = ' ';
@@ -490,7 +500,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		toGo = currentLevelMatrix[row][col + 1];
 		switch (toGo) {
 		case '#':
-			health--;
+			reduceHealth();
 			break;
 		case '%':
 			currentLevelMatrix[row][col] = ' ';
@@ -521,7 +531,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		toGo = currentLevelMatrix[row][col-1];
 		switch (toGo) {
 		case '#':
-			health--;
+			reduceHealth();
 			break;
 		case '%':
 			currentLevelMatrix[row][col] = ' ';
@@ -552,7 +562,7 @@ void validatePlayerMoves(int &row, int &col, bool& hasKey, char move) {
 		toGo = currentLevelMatrix[row + 1][col];
 		switch (toGo) {
 		case '#':
-			health--;
+			reduceHealth();
 			break;
 		case '%':
 			currentLevelMatrix[row][col] = ' ';
