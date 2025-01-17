@@ -245,18 +245,43 @@ void saveAndQuit(bool onLevelComplete) {
 	exit(EXIT_SUCCESS);
 }
 
+std::string mapToLevel(char input) {
+	switch (input) {
+	case 'a':
+	case 'b':
+		return "Easy";
+	case 'c':
+	case 'd':
+		return "Medium";
+	case 'e':
+	case 'f':
+		return "Hard";
+	}
+}
+
 void playCompletedLevel() {
 	std::cout << "Choose level to play again:" << std::endl;
 	int numberOfcompletedStages = countBeatenStages();
-	switch (numberOfcompletedStages) {
-		case 1:
-			std::cout << "1.Easy" << std::endl;
-		case 2:
-			std::cout << "1.Easy" << std::endl;
-		case 3:
-			std::cout << "1.Easy" << std::endl;
+	for (int i = 1; i <= numberOfcompletedStages; i++) {
+		std::cout << i << "." << mapToLevel(stagesBeat[i - 1]) << std::endl;
+	}
+	char res;
+	std::cout << "Input:";
+	std::cin >> res;
+	while (true) {
+		if (res <= '3' && res >= '1') {
+			if (currentLevelName.length() == 10) {
+				currentLevelName[5] = stagesBeat[(res - '0') - 1];
+			}
+			else {
+				currentLevelName.insert(5, 1, stagesBeat[(res - '0')]);
+			}
+			loadMatrixFromFile(currentLevelName);
 			break;
-
+		}
+		std::cout << "Invalid command!" << std::endl;
+		std::cout << "Input:";
+		std::cin >> res;
 	}
 }
 
@@ -278,12 +303,16 @@ void winGame() {
 		}
 		else if (res == '2') {
 			saveAndQuit(true);
+			break;
 		}
 		else if (res == '3') {
 			playCompletedLevel();
+			break;
 		}
+		std::cout << "Invalid command!" << std::endl;
+		std::cout << "Input:";
+		std::cin >> res;
 	}
-
 }
 
 void winLevel() {
@@ -296,7 +325,7 @@ void winLevel() {
 		}
 	}
 	if (countBeatenStages() >= 3) {
-		//winGame
+		winGame();
 	}
 	else {
 		system("cls");
@@ -333,7 +362,7 @@ void displayHealth(int health) {
 
 void renderMatrix(bool hasKey) {
 	system("cls");
-	std::cout << "Level:" << countBeatenStages() + 1 << std::endl;
+	std::cout << "Level:" << mapToLevel(currentLevelName[5]) << std::endl;
 	displayHealth(health);
 	std::cout << "Coins:" << coins << std::endl;
 	std::cout << "Key: " << (hasKey ? "Found" : "Not found") << std::endl;
